@@ -1,0 +1,25 @@
+{
+  "common": {
+    "languages": {
+      "japanese": "日本語",
+      "english": "English"
+    }
+  },
+  "shopHome": {
+    "share": "このお店を共有",
+    "copyLink": "リンクをコピー",
+    "linkCopied": "リンクをコピーしました",
+    "orderAtTable": "お席で注文",
+    "scanQR": "テーブルのQRコードを読み取ってメニューを見て注文できます。",
+    "noMenu": "メニューはありません",
+    "notFound": "お店が見つかりません",
+    "notFoundDescription": "リンクが無効か、お店が利用できなくなった可能性があります。"
+  },
+  "error": {
+    "notFound": {
+      "title": "ページが見つかりません",
+      "description": "お探しのページは存在しないか、移動した可能性があります。"
+    },
+    "goHome": "戻る"
+  }
+}
