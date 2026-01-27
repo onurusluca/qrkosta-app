@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const { t, locale } = useI18n()
+const { t } = useI18n()
 const props = withDefaults(
   defineProps<{
     shop?: {
@@ -18,34 +18,8 @@ const props = withDefaults(
   { shop: undefined, menuData: () => ({ categories: [], items: [] }), shareUrl: '' }
 )
 
-function getName(obj: unknown): string {
-  if (typeof obj === 'string') return obj
-  if (!obj || typeof obj !== 'object') return ''
-  const o = obj as Record<string, unknown>
-  const lang = locale.value === 'ja' ? 'ja' : 'en'
-  if (typeof o[lang] === 'string') return o[lang] as string
-  if (typeof o.en === 'string') return o.en
-  if (typeof o.ja === 'string') return o.ja
-  return ''
-}
-
-function formatPrice(n: number): string {
-  return `¥${n.toLocaleString()}`
-}
-
-const tabItems = computed(() =>
-  (props.menuData?.categories ?? []).map(c => ({
-    label: getName(c.name) || '—',
-    value: c.id,
-    slot: c.id
-  }))
-)
-
-const firstCategoryId = computed(() => (props.menuData?.categories ?? [])[0]?.id ?? '')
-
-function itemsForCategory(categoryId: string) {
-  return (props.menuData?.items ?? []).filter(i => i.category_id === categoryId)
-}
+const categories = computed(() => props.menuData?.categories ?? [])
+const items = computed(() => props.menuData?.items ?? [])
 
 const copied = ref(false)
 const effectiveUrl = computed(() =>
@@ -56,8 +30,11 @@ const copyLink = async () => {
   try {
     await navigator.clipboard.writeText(effectiveUrl.value)
     copied.value = true
-    setTimeout(() => { copied.value = false }, 2000)
-  } catch {}
+    const resetCopied = () => (copied.value = false)
+    setTimeout(resetCopied, 2000)
+  } catch {
+    // Clipboard may be unavailable
+  }
 }
 </script>
 
@@ -140,73 +117,13 @@ const copyLink = async () => {
         />
       </div>
 
-      <!-- Sticky tabs -->
-      <div
-        v-if="tabItems.length"
-        class="-mx-4"
-      >
-        <UTabs
-          :items="tabItems"
-          :default-value="firstCategoryId"
-          variant="link"
-          color="neutral"
-          size="sm"
-          :ui="{
-            list: 'overflow-x-auto overflow-y-hidden sticky top-0 z-10 bg-background/95 backdrop-blur border-b -mb-px',
-            trigger: 'shrink-0 grow-0'
-          }"
-          class="w-full"
-        >
-          <template
-            v-for="cat in (menuData?.categories ?? [])"
-            :key="cat.id"
-            #[cat.id]
-          >
-            <div class="py-4 space-y-3">
-              <div
-                v-for="item in itemsForCategory(cat.id)"
-                :key="item.id"
-                class="flex gap-3 rounded-lg p-3 bg-elevated/50"
-              >
-                <div
-                  v-if="item.photo_urls?.[0]"
-                  class="shrink-0 size-20 rounded-md overflow-hidden bg-muted"
-                >
-                  <NuxtImg
-                    provider="bunny"
-                    :src="item.photo_urls[0]"
-                    :alt="getName(item.name)"
-                    width="80"
-                    height="80"
-                    quality="80"
-                    class="size-full object-cover"
-                  />
-                </div>
-                <div class="min-w-0 flex-1">
-                  <p class="font-medium text-default truncate">
-                    {{ getName(item.name) }}
-                  </p>
-                  <p
-                    v-if="getName(item.description as object)"
-                    class="text-sm text-muted line-clamp-2 mt-0.5"
-                  >
-                    {{ getName(item.description as object) }}
-                  </p>
-                  <p class="text-sm font-medium text-default mt-1">
-                    <template v-if="item.discount_price">
-                      <span class="text-primary">{{ formatPrice(item.discount_price) }}</span>
-                      <span class="text-muted line-through ml-1">{{ formatPrice(item.price) }}</span>
-                    </template>
-                    <template v-else>
-                      {{ formatPrice(item.price) }}
-                    </template>
-                  </p>
-                </div>
-              </div>
-            </div>
-          </template>
-        </UTabs>
-      </div>
+      <!-- Menu (read-only on shop home) -->
+      <ShopMenu
+        v-if="categories.length"
+        :categories="categories"
+        :items="items"
+        :orderable="false"
+      />
       <div
         v-else
         class="py-8 text-center text-muted text-sm"

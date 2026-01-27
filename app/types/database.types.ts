@@ -577,9 +577,9 @@ export type Database = {
           id: string
           is_active: boolean | null
           shop_id: string
+          short_id: string
           sort_order: number | null
           table_number: string
-          table_slug: string | null
           updated_at: string | null
         }
         Insert: {
@@ -589,9 +589,9 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           shop_id: string
+          short_id: string
           sort_order?: number | null
           table_number: string
-          table_slug?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -601,9 +601,9 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           shop_id?: string
+          short_id?: string
           sort_order?: number | null
           table_number?: string
-          table_slug?: string | null
           updated_at?: string | null
         }
         Relationships: [

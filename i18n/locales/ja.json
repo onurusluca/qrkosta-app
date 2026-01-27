@@ -15,6 +15,14 @@
     "notFound": "お店が見つかりません",
     "notFoundDescription": "リンクが無効か、お店が利用できなくなった可能性があります。"
   },
+  "table": {
+    "showMyOrder": "注文を見る",
+    "order": "注文する",
+    "orderSuccess": "注文を送信しました",
+    "orderError": "注文できませんでした。もう一度お試しください。",
+    "items": "品",
+    "total": "合計"
+  },
   "error": {
     "notFound": {
       "title": "ページが見つかりません",
