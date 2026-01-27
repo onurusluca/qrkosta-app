@@ -1,0 +1,22 @@
+name = "qrkosta-app"
+compatibility_date = "2026-01-23"
+main = ".output/server/index.mjs"
+
+[assets]
+directory = ".output/public"
+binding = "ASSETS"
+
+[observability]
+enabled = true
+head_sampling_rate = 1
+
+[observability.logs]
+enabled = true
+head_sampling_rate = 1
+persist = true
+invocation_logs = true
+
+[observability.traces]
+enabled = false
+persist = true
+head_sampling_rate = 1
