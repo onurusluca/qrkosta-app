@@ -2,7 +2,7 @@ import { serverSupabaseClient } from '#supabase/server'
 
 const SHORT_ID_REGEX = /^[A-Za-z0-9]{4,6}$/
 
-interface OrderItemBody { menu_item_id: string; quantity: number }
+interface OrderItemBody { menu_item_id: string, quantity: number }
 
 /** Create order for table (get/create session, insert order + items) */
 export default defineEventHandler(async (event) => {

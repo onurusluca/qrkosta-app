@@ -17,7 +17,7 @@ export type MenuItem = {
   photo_urls?: string[] | null
 }
 
-export type CartLine = { item_id: string; quantity: number }
+export type CartLine = { item_id: string, quantity: number }
 
 const props = withDefaults(
   defineProps<{

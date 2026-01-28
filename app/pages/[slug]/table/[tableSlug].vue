@@ -1,5 +1,5 @@
 <script setup lang="ts">
-type CartLine = { item_id: string; quantity: number }
+type CartLine = { item_id: string, quantity: number }
 
 const SHORT_ID_REGEX = /^[A-Za-z0-9]{4,6}$/
 const { t, locale } = useI18n()
@@ -75,7 +75,7 @@ const cartSummaryLabel = computed(() => {
 })
 
 const cartLinesWithMeta = computed(() =>
-  cart.value.map(line => {
+  cart.value.map((line) => {
     const item = items.value.find(i => i.id === line.item_id)
     const unit = item ? (item.discount_price ?? item.price) : 0
     return {
@@ -140,10 +140,10 @@ useHead({
       <!-- Orderable menu -->
       <ShopMenu
         v-if="categories.length"
+        v-model="cart"
         :categories="categories"
         :items="items"
         :orderable="true"
-        v-model="cart"
       />
       <div
         v-else

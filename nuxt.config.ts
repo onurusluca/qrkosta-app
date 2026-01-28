@@ -9,6 +9,13 @@ export default defineNuxtConfig({
   css: ['~/assets/css/main.css'],
   ui: { colorMode: false },
 
+  runtimeConfig: {
+    public: {
+      SUPABASE_URL: process.env.SUPABASE_URL,
+      SUPABASE_KEY: process.env.SUPABASE_KEY
+    }
+  },
+
   routeRules: {
     '/**': { ssr: true }
   },
@@ -16,11 +23,7 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-01-15',
 
   nitro: {
-    preset: 'cloudflare-module',
-    cloudflare: {
-      deployConfig: true,
-      nodeCompat: true
-    }
+    preset: 'cloudflare_module'
   },
 
   vite: {
