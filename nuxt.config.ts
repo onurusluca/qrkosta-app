@@ -11,8 +11,8 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      // SUPABASE_URL: process.env.SUPABASE_URL,
-      // SUPABASE_KEY: process.env.SUPABASE_KEY
+      SUPABASE_URL: process.env.SUPABASE_URL,
+      SUPABASE_KEY: process.env.SUPABASE_KEY
     }
   },
 
@@ -23,7 +23,7 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-01-15',
 
   nitro: {
-    preset: 'cloudflare_module'
+    // preset: ''
   },
 
   vite: {
