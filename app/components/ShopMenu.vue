@@ -46,15 +46,40 @@ function formatPrice(n: number): string {
   return `¥${n.toLocaleString()}`
 }
 
-const tabItems = computed(() =>
-  props.categories.map(c => ({
-    label: getName(c.name) || '—',
-    value: c.id,
-    slot: c.id
-  }))
-)
-
 const firstCategoryId = computed(() => props.categories[0]?.id ?? '')
+
+const activeCategoryId = ref(firstCategoryId.value)
+const stickyHeight = 52
+
+function getSectionId(catId: string) {
+  return `category-${catId}`
+}
+
+function updateActiveFromScroll() {
+  if (import.meta.server) return
+  const scrollY = window.scrollY ?? document.documentElement.scrollTop
+  const threshold = stickyHeight + 16
+  let active = firstCategoryId.value
+  for (const cat of props.categories) {
+    const el = document.getElementById(getSectionId(cat.id))
+    if (!el) continue
+    const top = el.getBoundingClientRect().top + scrollY
+    if (top <= scrollY + threshold) active = cat.id
+  }
+  activeCategoryId.value = active
+}
+
+onMounted(() => {
+  const hash = window.location.hash.slice(1)
+  const fromHash = props.categories.find(c => getSectionId(c.id) === hash)?.id
+  activeCategoryId.value = fromHash ?? firstCategoryId.value
+  window.addEventListener('scroll', updateActiveFromScroll, { passive: true })
+  nextTick(updateActiveFromScroll)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', updateActiveFromScroll)
+})
 
 function itemsForCategory(categoryId: string): MenuItem[] {
   return props.items.filter(i => i.category_id === categoryId)
@@ -88,99 +113,116 @@ function remove(itemId: string) {
 
 <template>
   <div
-    v-if="tabItems.length"
+    v-if="categories.length"
     class="-mx-4"
   >
-    <UTabs
-      :items="tabItems"
-      :default-value="firstCategoryId"
-      variant="link"
-      color="neutral"
-      size="sm"
-      :ui="{
-        list: 'overflow-x-auto overflow-y-hidden sticky top-0 z-10 bg-background/95 backdrop-blur border-b -mb-px',
-        trigger: 'shrink-0 grow-0'
-      }"
-      class="w-full"
+    <!-- Sticky anchor tabs -->
+    <nav
+      class="sticky top-0 z-10 bg-background/95 backdrop-blur-lg border-b flex gap-0 shrink-0 overflow-x-auto overflow-y-hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      aria-label="Menu categories"
     >
-      <template
+      <a
         v-for="cat in categories"
         :key="cat.id"
-        #[cat.id]
+        :href="`#${getSectionId(cat.id)}`"
+        class="shrink-0 px-3 py-2 text-sm font-bold transition-colors rounded-t-md whitespace-nowrap scroll-mt-14"
+        :class="activeCategoryId === cat.id
+          ? 'bg-primary/15 text-primary'
+          : 'text-muted hover:text-default hover:bg-muted/50'"
       >
-        <div class="py-4 space-y-3">
-          <div
-            v-for="item in itemsForCategory(cat.id)"
-            :key="item.id"
-            class="flex gap-3 rounded-lg p-3 bg-elevated/50"
+        {{ getName(cat.name) || '—' }}
+      </a>
+    </nav>
+
+    <!-- All categories and items as scrollable sections -->
+    <section
+      v-for="cat in categories"
+      :id="getSectionId(cat.id)"
+      :key="cat.id"
+      class="scroll-mt-14"
+      :class="cat.id === categories[categories.length - 1]?.id ? 'pt-4 pb-32 space-y-3' : 'py-4 space-y-3'"
+    >
+      <h2 class="text-lg font-semibold text-dimmed px-1 mb-2">
+        {{ getName(cat.name) || '—' }}
+      </h2>
+      <div
+        v-for="item in itemsForCategory(cat.id)"
+        :key="item.id"
+        class="flex gap-3 rounded-lg p-3 bg-elevated/50"
+      >
+        <div
+          v-if="item.photo_urls?.[0]"
+          class="shrink-0 size-20 rounded-md overflow-hidden bg-muted"
+        >
+          <NuxtImg
+            provider="bunny"
+            :src="item.photo_urls[0]"
+            :alt="getName(item.name)"
+            width="80"
+            height="80"
+            quality="80"
+            class="size-full object-cover"
+          />
+        </div>
+        <div class="min-w-0 flex-1">
+          <p class="font-medium text-default truncate">
+            {{ getName(item.name) }}
+          </p>
+          <p
+            v-if="getName(item.description as object)"
+            class="text-sm text-muted line-clamp-2 mt-0.5"
           >
+            {{ getName(item.description as object) }}
+          </p>
+          <div class="flex items-center justify-between gap-2 mt-1">
+            <p class="text-sm font-medium text-default">
+              <template v-if="item.discount_price">
+                <span class="text-primary">{{ formatPrice(item.discount_price) }}</span>
+                <span class="text-muted line-through ml-1">{{ formatPrice(item.price) }}</span>
+              </template>
+              <template v-else>
+                {{ formatPrice(item.price) }}
+              </template>
+            </p>
             <div
-              v-if="item.photo_urls?.[0]"
-              class="shrink-0 size-20 rounded-md overflow-hidden bg-muted"
+              v-if="orderable"
+              class="shrink-0 flex items-center gap-0.5"
             >
-              <NuxtImg
-                provider="bunny"
-                :src="item.photo_urls[0]"
-                :alt="getName(item.name)"
-                width="80"
-                height="80"
-                quality="80"
-                class="size-full object-cover"
-              />
-            </div>
-            <div class="min-w-0 flex-1">
-              <p class="font-medium text-default truncate">
-                {{ getName(item.name) }}
-              </p>
-              <p
-                v-if="getName(item.description as object)"
-                class="text-sm text-muted line-clamp-2 mt-0.5"
+              <template v-if="cartQty(item.id) > 0">
+                <UButton
+                  variant="soft"
+                  size="xs"
+                  color="primary"
+                  icon="lucide:minus"
+                  :aria-label="`Remove one`"
+                  @click="remove(item.id)"
+                />
+                <span class="min-w-5 text-center text-sm tabular-nums">
+                  {{ cartQty(item.id) }}
+                </span>
+                <UButton
+                  variant="soft"
+                  size="xs"
+                  color="primary"
+                  icon="lucide:plus"
+                  :aria-label="`Add one`"
+                  @click="add(item.id)"
+                />
+              </template>
+              <UButton
+                v-else
+                variant="soft"
+                size="xs"
+                color="primary"
+                icon="lucide:plus"
+                @click="add(item.id)"
               >
-                {{ getName(item.description as object) }}
-              </p>
-              <div class="flex items-center justify-between gap-2 mt-1">
-                <p class="text-sm font-medium text-default">
-                  <template v-if="item.discount_price">
-                    <span class="text-primary">{{ formatPrice(item.discount_price) }}</span>
-                    <span class="text-muted line-through ml-1">{{ formatPrice(item.price) }}</span>
-                  </template>
-                  <template v-else>
-                    {{ formatPrice(item.price) }}
-                  </template>
-                </p>
-                <div
-                  v-if="orderable"
-                  class="shrink-0 flex items-center gap-0.5"
-                >
-                  <UButton
-                    v-if="cartQty(item.id) > 0"
-                    variant="ghost"
-                    size="xs"
-                    color="primary"
-                    icon="lucide:minus"
-                    :aria-label="`Remove one`"
-                    @click="remove(item.id)"
-                  />
-                  <span
-                    v-if="cartQty(item.id) > 0"
-                    class="min-w-5 text-center text-sm tabular-nums"
-                  >
-                    {{ cartQty(item.id) }}
-                  </span>
-                  <UButton
-                    variant="ghost"
-                    size="xs"
-                    color="primary"
-                    icon="lucide:plus"
-                    :aria-label="`Add one`"
-                    @click="add(item.id)"
-                  />
-                </div>
-              </div>
+                Add
+              </UButton>
             </div>
           </div>
         </div>
-      </template>
-    </UTabs>
+      </div>
+    </section>
   </div>
 </template>

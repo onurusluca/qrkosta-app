@@ -17,6 +17,7 @@ select {
   --ui-border-muted: var(--ui-color-neutral-700);
 
   div,
+  nav,
   section,
   header,
   footer,
@@ -36,6 +37,7 @@ select {
 }
 
 div,
+nav,
 section,
 header,
 footer,
