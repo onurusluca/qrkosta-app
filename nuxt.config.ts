@@ -10,9 +10,9 @@ export default defineNuxtConfig({
   ui: { colorMode: false },
 
   runtimeConfig: {
+    SUPABASE_KEY: process.env.SUPABASE_KEY,
     public: {
-      SUPABASE_URL: process.env.SUPABASE_URL,
-      SUPABASE_KEY: process.env.SUPABASE_KEY
+      SUPABASE_URL: process.env.SUPABASE_URL
     }
   },
 
@@ -30,14 +30,8 @@ export default defineNuxtConfig({
     optimizeDeps: {
       // Pre-bundle these dependencies for faster dev server startup
       include: [
-        'prosemirror-state',
-        'prosemirror-transform',
-        'prosemirror-model',
-        'prosemirror-view',
-        'prosemirror-gapcursor',
         '@supabase/postgrest-js',
-        '@supabase/supabase-js',
-        'prismjs'
+        '@supabase/supabase-js'
       ]
     }
   },
