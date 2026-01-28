@@ -1,33 +1,17 @@
 {
-  "common": {
-    "languages": {
-      "japanese": "日本語",
-      "english": "English"
-    }
-  },
-  "shopHome": {
-    "share": "このお店を共有",
-    "copyLink": "リンクをコピー",
-    "linkCopied": "リンクをコピーしました",
-    "orderAtTable": "お席で注文",
-    "scanQR": "テーブルのQRコードを読み取ってメニューを見て注文できます。",
-    "noMenu": "メニューはありません",
-    "notFound": "お店が見つかりません",
-    "notFoundDescription": "リンクが無効か、お店が利用できなくなった可能性があります。"
-  },
-  "table": {
-    "showMyOrder": "注文を見る",
-    "order": "注文する",
-    "orderSuccess": "注文を送信しました",
-    "orderError": "注文できませんでした。もう一度お試しください。",
-    "items": "品",
-    "total": "合計"
-  },
-  "error": {
-    "notFound": {
-      "title": "ページが見つかりません",
-      "description": "お探しのページは存在しないか、移動した可能性があります。"
-    },
-    "goHome": "戻る"
+  "shop": {
+    "title": "メニュー",
+    "notFound": "お店が見つかりません。",
+    "error": "エラーが発生しました。",
+    "noMenu": "メニューはまだありません。",
+    "map": "地図",
+    "scanPrompt": "テーブルのQRコードをスキャンするか、ショップのリンクを入力してメニューをご覧ください。",
+    "table": "テーブル {number}",
+    "add": "追加",
+    "placeOrder": "注文する",
+    "confirmOrder": "注文を確認",
+    "orderSent": "注文を送信しました。",
+    "orderError": "注文の送信に失敗しました。",
+    "cartItems": "{count}品"
   }
 }

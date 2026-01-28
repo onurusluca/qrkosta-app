@@ -10,6 +10,7 @@ export default defineNuxtConfig({
   ui: { colorMode: false },
 
   runtimeConfig: {
+    SUPABASE_SECRET_KEY: process.env.SUPABASE_SECRET_KEY,
     public: {
       SUPABASE_URL: process.env.SUPABASE_URL,
       SUPABASE_KEY: process.env.SUPABASE_KEY

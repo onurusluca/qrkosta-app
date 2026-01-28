@@ -64,3 +64,12 @@ button:disabled,
 [role="button"]:disabled {
   cursor: default;
 }
+
+/* Hide scrollbar but keep scroll (e.g. category tabs) */
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}

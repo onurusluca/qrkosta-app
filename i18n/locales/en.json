@@ -1,33 +1,17 @@
 {
-  "common": {
-    "languages": {
-      "japanese": "日本語",
-      "english": "English"
-    }
-  },
-  "shopHome": {
-    "share": "Share this place",
-    "copyLink": "Copy link",
-    "linkCopied": "Link copied",
-    "orderAtTable": "Order at your table",
-    "scanQR": "Scan the QR code at your table to view the menu and order.",
-    "noMenu": "No menu available",
-    "notFound": "Shop not found",
-    "notFoundDescription": "This link may be broken or the shop is no longer available."
-  },
-  "table": {
-    "showMyOrder": "Show my order",
-    "order": "Order",
-    "orderSuccess": "Order placed successfully",
-    "orderError": "Could not place order. Please try again.",
-    "items": "items",
-    "total": "Total"
-  },
-  "error": {
-    "notFound": {
-      "title": "Page not found",
-      "description": "The page you're looking for doesn't exist or has been moved."
-    },
-    "goHome": "Go back"
+  "shop": {
+    "title": "Menu",
+    "notFound": "Shop not found.",
+    "error": "Something went wrong.",
+    "noMenu": "No menu available yet.",
+    "map": "Map",
+    "scanPrompt": "Scan the QR code at your table or enter your shop link to view the menu.",
+    "table": "Table {number}",
+    "add": "Add",
+    "placeOrder": "Place order",
+    "confirmOrder": "Confirm order",
+    "orderSent": "Order sent.",
+    "orderError": "Failed to send order.",
+    "cartItems": "{count} item | {count} items"
   }
 }
