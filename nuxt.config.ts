@@ -23,15 +23,7 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-01-15',
 
   nitro: {
-    preset: 'cloudflare_module',
-    cloudflare: {
-      wrangler: {
-        vars: {
-          SUPABASE_URL: process.env.SUPABASE_URL ?? '',
-          SUPABASE_KEY: process.env.SUPABASE_KEY ?? ''
-        }
-      }
-    }
+    preset: 'cloudflare_module'
   },
 
   vite: {
@@ -84,6 +76,8 @@ export default defineNuxtConfig({
   },
 
   supabase: {
-    redirect: false
+    redirect: false,
+    url: process.env.SUPABASE_URL,
+    key: process.env.SUPABASE_KEY
   }
 })
