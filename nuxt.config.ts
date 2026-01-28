@@ -17,7 +17,7 @@ export default defineNuxtConfig({
   },
 
   routeRules: {
-    '/**': { ssr: true }
+    // '/**': { ssr: true }
   },
 
   compatibilityDate: '2025-01-15',
