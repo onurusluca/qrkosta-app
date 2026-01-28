@@ -23,6 +23,26 @@ export default defineNuxtConfig({
     }
   },
 
+  vite: {
+    optimizeDeps: {
+      // Pre-bundle these dependencies for faster dev server startup
+      include: [
+        'prosemirror-state',
+        'prosemirror-transform',
+        'prosemirror-model',
+        'prosemirror-view',
+        'prosemirror-gapcursor',
+        '@supabase/postgrest-js',
+        '@supabase/supabase-js',
+        'prismjs'
+      ]
+    }
+  },
+
+  telemetry: {
+    enabled: false
+  },
+
   eslint: {
     config: {
       stylistic: {
@@ -39,6 +59,15 @@ export default defineNuxtConfig({
     locales: [
       { code: 'en', name: 'English', file: 'en.json' },
       { code: 'ja', name: '日本語', file: 'ja.json' }
+    ]
+  },
+
+  icon: {
+    customCollections: [
+      {
+        prefix: 'custom',
+        dir: './app/assets/icons'
+      }
     ]
   },
 

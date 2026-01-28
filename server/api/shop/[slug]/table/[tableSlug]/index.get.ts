@@ -2,7 +2,6 @@ import { serverSupabaseClient } from '#supabase/server'
 
 const SHORT_ID_REGEX = /^[A-Za-z0-9]{4,6}$/
 
-/** Table by shop slug/short_id and table short_id */
 export default defineEventHandler(async (event) => {
   const slugParam = getRouterParam(event, 'slug')
   const tableSlug = getRouterParam(event, 'tableSlug')
