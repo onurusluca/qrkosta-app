@@ -10,14 +10,14 @@ export default defineNuxtConfig({
   ui: { colorMode: false },
 
   runtimeConfig: {
-    SUPABASE_KEY: process.env.SUPABASE_KEY,
     public: {
-      SUPABASE_URL: process.env.SUPABASE_URL
+      SUPABASE_URL: process.env.SUPABASE_URL,
+      SUPABASE_KEY: process.env.SUPABASE_KEY
     }
   },
 
   routeRules: {
-    // '/**': { ssr: true }
+    '/**': { ssr: true }
   },
 
   compatibilityDate: '2025-01-15',
