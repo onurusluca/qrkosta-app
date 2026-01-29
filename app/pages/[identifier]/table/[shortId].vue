@@ -9,6 +9,7 @@ type MenuItemVariant = Database['public']['Tables']['menu_item_variants']['Row']
 
 const route = useRoute()
 const { t, locale } = useI18n()
+const { formatPrice, currency } = useCurrency()
 const identifier = computed(() => route.params.identifier as string)
 const tableShortId = computed(() => route.params.shortId as string)
 
@@ -129,7 +130,7 @@ useHead({
       class="flex min-h-screen flex-col items-center justify-center gap-4 px-4"
     >
       <UIcon
-        name="lucide:store-off"
+        name="lucide:store"
         class="size-16 text-neutral-300"
       />
       <p class="text-center text-neutral-600">
@@ -139,14 +140,17 @@ useHead({
 
     <template v-else-if="shop && table">
       <header class="border-b border-neutral-200 bg-white px-4 py-6">
+        <div class="flex justify-end gap-2 px-4 pb-2">
+          <LanguageChanger />
+          <CurrencyChanger />
+        </div>
         <div class="flex flex-col items-center gap-4 text-center sm:flex-row sm:items-start sm:text-left">
           <NuxtImg
             v-if="shop.logo_url"
             :src="shop.logo_url"
             alt=""
-            class="size-20 shrink-0 rounded-2xl object-cover shadow-sm"
-            width="80"
-            height="80"
+            class="max-h-20 w-auto max-w-32 shrink-0 object-contain"
+            loading="lazy"
             provider="bunny"
           />
           <div class="min-w-0 flex-1">
@@ -207,7 +211,7 @@ useHead({
           trailing-icon="lucide:chevron-up"
         >
           <span class="font-semibold text-white">
-            {{ new Intl.NumberFormat(undefined, { style: 'currency', currency: 'JPY', maximumFractionDigits: 0 }).format(cartTotal) }}
+            {{ formatPrice(cartTotal) }}
             <span class="ml-1 text-md font-normal text-white/90">· {{ t('shop.cartItems', { count: cartCount }) }}</span>
           </span>
           <span class="text-md font-medium text-white">{{ t('shop.confirmOrder') }}</span>
@@ -224,12 +228,15 @@ useHead({
                 class="flex justify-between gap-2 text-sm"
               >
                 <span class="text-neutral-700">× {{ line.quantity }}</span>
-                <span class="font-medium text-neutral-900">{{ new Intl.NumberFormat(undefined, { style: 'currency', currency: 'JPY', maximumFractionDigits: 0 }).format(line.price * line.quantity) }}</span>
+                <span class="font-medium text-neutral-900">{{ formatPrice(line.price * line.quantity) }}</span>
               </li>
             </ul>
             <p class="flex justify-between border-t border-neutral-200 pt-3 font-semibold text-neutral-900">
               <span>{{ t('shop.placeOrder') }}</span>
-              <span>{{ new Intl.NumberFormat(undefined, { style: 'currency', currency: 'JPY', maximumFractionDigits: 0 }).format(cartTotal) }}</span>
+              <span>
+                {{ formatPrice(cartTotal) }}
+                <span v-if="currency !== 'JPY'" class="ml-1.5 text-sm font-normal text-neutral-500">(¥{{ cartTotal.toLocaleString() }})</span>
+              </span>
             </p>
             <UButton
               :loading="isSubmitting"

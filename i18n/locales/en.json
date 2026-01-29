@@ -1,6 +1,12 @@
 {
   "shop": {
     "title": "Menu",
+    "share": "Share",
+    "bioMenu": "Our Menu",
+    "bioBook": "Book a Table",
+    "bioFindUs": "Find Us",
+    "bioWriteUs": "Write us",
+    "bioContact": "Talk to us",
     "notFound": "Shop not found.",
     "error": "Something went wrong.",
     "noMenu": "No menu available yet.",

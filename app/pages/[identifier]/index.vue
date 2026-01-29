@@ -1,10 +1,29 @@
 <script setup lang="ts">
 import type { Database } from '~/types/database.types'
 
-type Shop = Database['public']['Tables']['shops']['Row']
-type MenuCategory = Database['public']['Tables']['menu_categories']['Row']
-type MenuItem = Database['public']['Tables']['menu_items']['Row']
-type MenuItemVariant = Database['public']['Tables']['menu_item_variants']['Row']
+/** Options only: what to show, order, styling, layout. All content from shop. */
+type Shop = Database['public']['Tables']['shops']['Row'] & { bio_options?: BioOptions | null }
+interface BioOptions {
+  button_order?: string[] | null // e.g. ['menu','book','map','contact']; which to show + order
+  show_social?: boolean | null
+  layout?: string | null
+  button_style?: string | null
+}
+
+const BIO_ICONS: Record<string, string> = {
+  menu: 'lucide:utensils',
+  book: 'lucide:calendar-days',
+  map: 'lucide:map-pin',
+  email: 'lucide:mail',
+  contact: 'lucide:phone'
+}
+
+interface BioButtonRow {
+  labelKey: string
+  url: string
+  type: string
+  icon: string
+}
 
 const route = useRoute()
 const { t, locale } = useI18n()
@@ -22,8 +41,8 @@ function localeText(val: import('~/types/database.types').Json | null | undefine
 }
 
 const { data: payload, error, pending } = await useAsyncData(
-  `shop-${identifier.value}`,
-  () => $fetch<{ slug?: string, shop?: Shop, menu?: unknown, categories: MenuCategory[], items: MenuItem[], variants: MenuItemVariant[] }>(`/api/shop/${identifier.value}`),
+  `shop-bio-${identifier.value}`,
+  () => $fetch<{ slug?: string, shop?: Shop }>(`/api/shop/${identifier.value}`),
   { watch: [identifier], server: true }
 )
 
@@ -38,12 +57,85 @@ watch(redirectToSlug, (v) => {
 }, { immediate: true })
 
 const shop = computed(() => ('shop' in (payload.value || {}) ? payload.value?.shop : null) as Shop | null)
-const categories = computed(() => ((payload.value && 'categories' in payload.value ? payload.value.categories : []) || []) as MenuCategory[])
-const items = computed(() => ((payload.value && 'items' in payload.value ? payload.value.items : []) || []) as MenuItem[])
-const variants = computed(() => ((payload.value && 'variants' in payload.value ? payload.value.variants : []) || []) as MenuItemVariant[])
+
+/** Japanese-style: 〒postal_code prefecture city town street building, or formatted fallback */
+function formatAddress(addr: import('~/types/database.types').Json | null | undefined): string {
+  if (addr == null) return ''
+  const o = addr as Record<string, string | undefined>
+  if (o.formatted) return o.formatted
+  const parts: string[] = []
+  if (o.postal_code) parts.push(`〒${String(o.postal_code).replace(/(\d{3})(\d{4})/, '$1-$2')}`)
+  if (o.prefecture) parts.push(o.prefecture)
+  if (o.city) parts.push(o.city)
+  if (o.town) parts.push(o.town)
+  if (o.street) parts.push(o.street)
+  if (o.building) parts.push(o.building)
+  return parts.join(' ') || ''
+}
+
+const formattedAddress = computed(() => formatAddress(shop.value?.address ?? null))
+
+const bioButtons = computed((): BioButtonRow[] => {
+  const s = shop.value
+  if (!s) return []
+  const base = `/${identifier.value}`
+  const all: BioButtonRow[] = [
+    { labelKey: 'shop.bioMenu', url: `${base}/menu`, type: 'menu', icon: BIO_ICONS.menu! }
+  ]
+  // Booking not yet: if (s.website_url) all.push({ labelKey: 'shop.bioBook', url: s.website_url, type: 'book', icon: BIO_ICONS.book! })
+  if (s.google_maps_url) all.push({ labelKey: 'shop.bioFindUs', url: s.google_maps_url, type: 'map', icon: BIO_ICONS.map! })
+  if (s.email) all.push({ labelKey: 'shop.bioWriteUs', url: `mailto:${s.email}`, type: 'email', icon: BIO_ICONS.email! })
+  if (s.phone) all.push({ labelKey: 'shop.bioContact', url: `tel:${s.phone}`, type: 'contact', icon: BIO_ICONS.contact! })
+  const order = shop.value?.bio_options?.button_order
+  if (Array.isArray(order) && order.length > 0) {
+    const byType = new Map(all.map(b => [b.type, b]))
+    return order.map(type => byType.get(type)).filter(Boolean) as BioButtonRow[]
+  }
+  return all
+})
+
+const brandColor = computed(() => {
+  const c = shop.value?.brand_color
+  if (!c || !/^#[0-9A-Fa-f]{6}$/.test(c)) return null
+  return c
+})
+const socialLinks = computed(() => {
+  const s = shop.value
+  if (!s) return []
+  const links: { icon: string, url: string, label: string }[] = []
+  if (s.instagram_url) links.push({ icon: 'lucide:instagram', url: s.instagram_url, label: 'Instagram' })
+  if (s.twitter_url) links.push({ icon: 'lucide:twitter', url: s.twitter_url, label: 'Twitter' })
+  if (s.line_url) links.push({ icon: 'simple-icons:line', url: s.line_url, label: 'LINE' })
+  return links
+})
+
+function isExternal(url: string): boolean {
+  return url.startsWith('http') || url.startsWith('tel:') || url.startsWith('mailto:')
+}
+
+const canShare = ref(false)
+onMounted(() => {
+  canShare.value = typeof navigator !== 'undefined' && !!navigator.share
+})
+
+async function handleShare() {
+  if (!canShare.value || !navigator.share) return
+  try {
+    await navigator.share({
+      title: shop.value ? localeText(shop.value.name as import('~/types/database.types').Json) : 'Shop',
+      url: window.location.href
+    })
+  } catch {
+    // User cancelled or error
+  }
+}
 
 useHead({
-  title: () => (shop.value ? localeText(shop.value.name as import('~/types/database.types').Json) : t('shop.title'))
+  title: () => (shop.value ? localeText(shop.value.name as import('~/types/database.types').Json) : t('shop.title')),
+  link: () =>
+    shop.value?.logo_url
+      ? [{ rel: 'icon', href: shop.value.logo_url }]
+      : []
 })
 </script>
 
@@ -65,7 +157,7 @@ useHead({
         class="flex min-h-screen flex-col items-center justify-center gap-4 px-4"
       >
         <UIcon
-          name="lucide:store-off"
+          name="lucide:store"
           class="size-16 text-neutral-300"
         />
         <p class="text-center text-neutral-600">
@@ -84,64 +176,103 @@ useHead({
       </div>
 
       <template v-else-if="shop">
-        <header class="border-b border-neutral-200 bg-white px-4 py-6">
-          <div class="flex flex-col items-center gap-4 text-center sm:flex-row sm:items-start sm:text-left">
+        <div
+          class="mx-auto flex min-h-screen max-w-md flex-col px-5 py-10"
+          :style="brandColor ? { '--brand': brandColor } : undefined"
+        >
+          <!-- Logo: preserve aspect (not forced square), name only -->
+          <div class="flex flex-col items-center text-center">
             <NuxtImg
               v-if="shop.logo_url"
               :src="shop.logo_url"
               alt=""
-              class="size-20 shrink-0 rounded-2xl object-cover shadow-sm"
-              width="80"
-              height="80"
+              class="mb-5 max-h-24 w-auto max-w-[200px] shrink-0 object-contain"
+              loading="lazy"
               provider="bunny"
             />
-            <div class="min-w-0 flex-1">
-              <h1 class="text-xl font-semibold tracking-tight text-neutral-900 sm:text-2xl">
-                {{ localeText(shop.name) }}
-              </h1>
-              <p
-                v-if="shop.address && typeof shop.address === 'object' && 'formatted' in shop.address"
-                class="mt-1 text-sm text-neutral-500"
-              >
-                {{ (shop.address as { formatted?: string }).formatted }}
-              </p>
-              <div
-                v-if="shop.phone || shop.email"
-                class="mt-2 flex flex-wrap justify-center gap-x-4 gap-y-1 text-sm text-neutral-500 sm:justify-start"
-              >
-                <a
-                  v-if="shop.phone"
-                  :href="`tel:${shop.phone}`"
-                  class="hover:text-neutral-700"
-                >{{ shop.phone }}</a>
-                <a
-                  v-if="shop.email"
-                  :href="`mailto:${shop.email}`"
-                  class="hover:text-neutral-700"
-                >{{ shop.email }}</a>
-              </div>
-              <a
-                v-if="shop.google_maps_url"
-                :href="shop.google_maps_url"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="mt-2 inline-flex items-center gap-1 text-sm font-medium text-primary-600 hover:underline"
+            <h1 class="text-xl font-medium tracking-tight text-neutral-900">
+              {{ localeText(shop.name) }}
+            </h1>
+          </div>
+
+          <!-- Buttons with icons; brand used sparingly for icon/hover -->
+          <div class="mt-10 flex flex-col gap-2.5">
+            <template
+              v-for="(btn, i) in bioButtons"
+              :key="i"
+            >
+              <NuxtLink
+                v-if="!isExternal(btn.url)"
+                :to="btn.url"
+                class="bio-btn flex w-full items-center justify-center gap-3 rounded-lg border border-neutral-200 bg-white px-4 py-3.5 text-left font-normal text-neutral-800 transition hover:border-neutral-300 hover:bg-neutral-50"
               >
                 <UIcon
-                  name="lucide:map-pin"
-                  class="size-4"
+                  :name="btn.icon"
+                  class="size-5 shrink-0"
+                  :class="brandColor ? 'text-(--brand)' : 'text-neutral-500'"
                 />
-                {{ t('shop.map') }}
+                <span>{{ t(btn.labelKey) }}</span>
+              </NuxtLink>
+              <a
+                v-else
+                :href="btn.url"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="bio-btn flex w-full items-center justify-center gap-3 rounded-lg border border-neutral-200 bg-white px-4 py-3.5 text-left font-normal text-neutral-800 transition hover:border-neutral-300 hover:bg-neutral-50"
+              >
+                <UIcon
+                  :name="btn.icon"
+                  class="size-5 shrink-0"
+                  :class="brandColor ? 'text-(--brand)' : 'text-neutral-500'"
+                />
+                <span>{{ t(btn.labelKey) }}</span>
               </a>
-            </div>
+            </template>
           </div>
-        </header>
 
-        <Menu
-          :categories="categories"
-          :items="items"
-          :variants="variants"
-        />
+          <!-- Social: no gap, bigger icons -->
+          <div
+            v-if="socialLinks.length > 0 && (shop.bio_options?.show_social !== false)"
+            class="mt-12 flex justify-center gap-0 border-t border-neutral-100 pt-8"
+          >
+            <a
+              v-for="link in socialLinks"
+              :key="link.label"
+              :href="link.url"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="p-2 text-neutral-400 transition hover:text-neutral-600"
+              :aria-label="link.label"
+            >
+              <UIcon
+                :name="link.icon"
+                class="size-8"
+              />
+            </a>
+          </div>
+
+          <!-- Address, plain text (Find Us is a button above) -->
+          <p
+            v-if="formattedAddress"
+            class="mt-8 text-center text-sm text-neutral-500"
+          >
+            {{ formattedAddress }}
+          </p>
+
+          <!-- Language + share, just under address -->
+          <div class="mt-6 flex flex-wrap items-center justify-center gap-3">
+            <LanguageChanger />
+            <UButton
+              v-if="canShare"
+              icon="lucide:share-2"
+              color="neutral"
+              variant="ghost"
+              size="sm"
+              :label="t('shop.share')"
+              @click="handleShare"
+            />
+          </div>
+        </div>
       </template>
     </template>
   </div>

@@ -1,6 +1,12 @@
 {
   "shop": {
     "title": "メニュー",
+    "share": "シェア",
+    "bioMenu": "メニュー",
+    "bioBook": "予約する",
+    "bioFindUs": "地図",
+    "bioWriteUs": "メールする",
+    "bioContact": "お問い合わせ",
     "notFound": "お店が見つかりません。",
     "error": "エラーが発生しました。",
     "noMenu": "メニューはまだありません。",

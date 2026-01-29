@@ -29,16 +29,13 @@ function getQty(menuItemId: string, variantId?: string): number {
 }
 
 const { locale } = useI18n()
+const { formatPrice } = useCurrency()
 
 function localeText(val: import('~/types/database.types').Json | null | undefined): string {
   if (val == null) return ''
   if (typeof val === 'string') return val
   const o = val as Record<string, string>
   return o[locale.value] ?? o.en ?? o.ja ?? Object.values(o)[0] ?? ''
-}
-
-function formatPrice(price: number) {
-  return new Intl.NumberFormat(undefined, { style: 'currency', currency: 'JPY', maximumFractionDigits: 0 }).format(price)
 }
 
 const itemsByCategory = computed(() => {
@@ -98,14 +95,14 @@ watch(activeCategoryId, () => {
     const width = tab.offsetWidth
     const scrollLeft = scrollEl.scrollLeft
     const clientWidth = scrollEl.clientWidth
-    if (left < scrollLeft) scrollEl.scrollTo({ left, behavior: 'smooth' })
-    else if (left + width > scrollLeft + clientWidth) scrollEl.scrollTo({ left: left + width - clientWidth, behavior: 'smooth' })
+    if (left < scrollLeft) scrollEl.scrollTo({ left, behavior: 'instant' })
+    else if (left + width > scrollLeft + clientWidth) scrollEl.scrollTo({ left: left + width - clientWidth, behavior: 'instant' })
   })
 }, { flush: 'post' })
 
 function scrollToCategory(id: string) {
   activeCategoryId.value = id
-  document.getElementById(`category-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  document.getElementById(`category-${id}`)?.scrollIntoView({ behavior: 'instant', block: 'start' })
 }
 
 function addItem(item: MenuItem, variant?: MenuItemVariant) {
