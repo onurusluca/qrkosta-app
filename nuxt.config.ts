@@ -13,7 +13,8 @@ export default defineNuxtConfig({
     SUPABASE_SECRET_KEY: process.env.SUPABASE_SECRET_KEY,
     public: {
       SUPABASE_URL: process.env.SUPABASE_URL,
-      SUPABASE_KEY: process.env.SUPABASE_KEY
+      SUPABASE_KEY: process.env.SUPABASE_KEY,
+      BUNNY_CDN_URL: 'https://qrkosta.b-cdn.net'
     }
   },
 

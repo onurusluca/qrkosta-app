@@ -20,6 +20,7 @@ function onSelect(v: string | { value: string } | undefined) {
     :items="options"
     value-key="value"
     size="sm"
+    variant="ghost"
     class="min-w-24"
     @update:model-value="onSelect"
   />

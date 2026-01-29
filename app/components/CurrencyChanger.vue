@@ -15,6 +15,7 @@ const options = CURRENCIES.map(code => ({
     :items="options"
     value-key="value"
     size="sm"
+    variant="ghost"
     class="min-w-20"
     @update:model-value="(v: Currency | { value: Currency } | undefined) => setCurrency(typeof v === 'object' && v?.value != null ? v.value : (v as Currency) ?? 'JPY')"
   />

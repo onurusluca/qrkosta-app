@@ -18,6 +18,12 @@
     "confirmOrder": "注文を確認",
     "orderSent": "注文を送信しました。",
     "orderError": "注文の送信に失敗しました。",
-    "cartItems": "{count}品"
+    "cartItems": "{count}品",
+    "pastOrders": "過去の注文",
+    "myOrders": "自分の注文",
+    "everyonesOrders": "全員の注文",
+    "allMyOrders": "自分の注文一覧",
+    "back": "戻る",
+    "noPastOrders": "過去の注文はありません"
   }
 }

@@ -18,6 +18,12 @@
     "confirmOrder": "Confirm order",
     "orderSent": "Order sent.",
     "orderError": "Failed to send order.",
-    "cartItems": "{count} item | {count} items"
+    "cartItems": "{count} item | {count} items",
+    "pastOrders": "Past orders",
+    "myOrders": "My orders",
+    "everyonesOrders": "Everyone's orders",
+    "allMyOrders": "All my orders",
+    "back": "Back",
+    "noPastOrders": "No past orders"
   }
 }

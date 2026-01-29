@@ -39,7 +39,7 @@ function clearAndGoHome() {
     </div>
     <pre
       v-if="errorDetails"
-      class="overflow-auto rounded bg-default-100 p-3 text-default-700 whitespace-pre-wrap break-all max-h-[85vh]"
+      class="overflow-auto rounded -100 p-3 text-default-700 whitespace-pre-wrap break-all max-h-[85vh]"
     >message:     {{ errorDetails.message ?? '—' }}
 statusCode:   {{ errorDetails.statusCode ?? '—' }}
 statusMessage: {{ errorDetails.statusMessage ?? '—' }}

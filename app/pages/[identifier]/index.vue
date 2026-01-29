@@ -130,11 +130,19 @@ async function handleShare() {
   }
 }
 
+const config = useRuntimeConfig().public as { BUNNY_CDN_URL?: string }
+function fullCdnUrl(path: string): string {
+  if (path.startsWith('http')) return path
+  const base = (config.BUNNY_CDN_URL ?? 'https://qrkosta.b-cdn.net').replace(/\/$/, '')
+  const p = path.replace(/^\//, '')
+  return `${base}/${p}`
+}
+
 useHead({
   title: () => (shop.value ? localeText(shop.value.name as import('~/types/database.types').Json) : t('shop.title')),
   link: () =>
     shop.value?.logo_url
-      ? [{ rel: 'icon', href: shop.value.logo_url }]
+      ? [{ rel: 'icon', href: fullCdnUrl(shop.value.logo_url), key: 'favicon' }]
       : []
 })
 </script>
