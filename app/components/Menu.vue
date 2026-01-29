@@ -147,7 +147,7 @@ function removeItem(menuItemId: string, variantId?: string) {
         />
       </nav>
     </div>
-    <main class="px-4 py-6 pb-12">
+    <main class="px-2 py-6 pb-12">
       <section
         v-for="cat in categories"
         :id="`category-${cat.id}`"
@@ -192,7 +192,7 @@ function removeItem(menuItemId: string, variantId?: string) {
                       icon="lucide:minus"
                       color="neutral"
                       variant="ghost"
-                      size="xs"
+                      size="sm"
                       class="size-8 shrink-0 rounded-l-md rounded-r-none"
                       aria-label="Decrease"
                       @click="removeItem(item.id)"
@@ -202,7 +202,7 @@ function removeItem(menuItemId: string, variantId?: string) {
                       icon="lucide:plus"
                       color="neutral"
                       variant="ghost"
-                      size="xs"
+                      size="sm"
                       class="size-8 shrink-0 rounded-l-none rounded-r-md"
                       aria-label="Increase"
                       @click="addItem(item)"
@@ -215,7 +215,7 @@ function removeItem(menuItemId: string, variantId?: string) {
                     icon="lucide:plus"
                     color="primary"
                     variant="solid"
-                    size="sm"
+                    size="md"
                     @click="addItem(item)"
                   />
                 </template>
@@ -229,7 +229,7 @@ function removeItem(menuItemId: string, variantId?: string) {
                         icon="lucide:minus"
                         color="neutral"
                         variant="ghost"
-                        size="xs"
+                        size="sm"
                         class="size-8 shrink-0 rounded-l-md rounded-r-none"
                         aria-label="Decrease"
                         @click="removeItem(item.id, v.id)"
@@ -239,7 +239,7 @@ function removeItem(menuItemId: string, variantId?: string) {
                         icon="lucide:plus"
                         color="neutral"
                         variant="ghost"
-                        size="xs"
+                        size="sm"
                         class="size-8 shrink-0 rounded-l-none rounded-r-md"
                         aria-label="Increase"
                         @click="addItem(item, v)"
@@ -252,7 +252,7 @@ function removeItem(menuItemId: string, variantId?: string) {
                     icon="lucide:plus"
                     color="neutral"
                     variant="outline"
-                    size="sm"
+                    size="md"
                     @click="addItem(item, v)"
                   />
                 </template>
