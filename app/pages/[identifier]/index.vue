@@ -190,14 +190,18 @@ useHead({
         >
           <!-- Logo: preserve aspect (not forced square), name only -->
           <div class="flex flex-col items-center text-center">
-            <NuxtImg
+            <div
               v-if="shop.logo_url"
-              :src="shop.logo_url"
-              alt=""
-              class="mb-5 max-h-24 w-auto max-w-[200px] shrink-0 object-contain"
-              loading="lazy"
-              provider="bunny"
-            />
+              class="mb-5 flex h-24 max-h-24 w-[200px] max-w-[200px] shrink-0 items-center justify-center overflow-hidden"
+            >
+              <NuxtImg
+                :src="shop.logo_url"
+                alt=""
+                class="h-full max-h-full w-full max-w-full object-contain"
+                loading="lazy"
+                provider="bunny"
+              />
+            </div>
             <h1 class="text-xl font-medium tracking-tight text-neutral-900">
               {{ localeText(shop.name) }}
             </h1>

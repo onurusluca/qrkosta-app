@@ -30,7 +30,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 500, statusMessage: 'Failed to create order' })
   }
 
-  const orderItems = body.items.map((item) => ({
+  const orderItems = body.items.map(item => ({
     order_id: order.id,
     menu_item_id: item.menu_item_id,
     quantity: Math.max(1, Math.min(99, item.quantity)),

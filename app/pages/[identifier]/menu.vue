@@ -90,14 +90,18 @@ useHead({
             <CurrencyChanger />
           </div>
           <div class="flex flex-col items-center gap-4 text-center sm:flex-row sm:items-start sm:text-left">
-            <NuxtImg
+            <div
               v-if="shop.logo_url"
-              :src="shop.logo_url"
-              alt=""
-              class="max-h-20 w-auto max-w-32 shrink-0 object-contain"
-              loading="lazy"
-              provider="bunny"
-            />
+              class="flex h-20 max-h-20 w-32 max-w-32 shrink-0 items-center justify-center overflow-hidden"
+            >
+              <NuxtImg
+                :src="shop.logo_url"
+                alt=""
+                class="h-full max-h-full w-full max-w-full object-contain"
+                loading="lazy"
+                provider="bunny"
+              />
+            </div>
             <div class="min-w-0 flex-1">
               <h1 class="text-xl font-semibold tracking-tight text-neutral-900 sm:text-2xl">
                 {{ localeText(shop.name) }}

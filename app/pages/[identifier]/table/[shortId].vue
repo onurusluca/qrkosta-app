@@ -200,12 +200,12 @@ useHead({
         <div class="flex flex-col items-center gap-4 text-center sm:flex-row sm:items-start sm:text-left">
           <div
             v-if="shop.logo_url"
-            class="flex max-h-20 max-w-32 shrink-0 items-center justify-center"
+            class="flex h-20 max-h-20 w-32 max-w-32 shrink-0 items-center justify-center overflow-hidden"
           >
             <NuxtImg
               :src="shop.logo_url"
               alt=""
-              class="max-h-full max-w-full object-contain"
+              class="h-full max-h-full w-full max-w-full object-contain"
               loading="lazy"
               provider="bunny"
             />
