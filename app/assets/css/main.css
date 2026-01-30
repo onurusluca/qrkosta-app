@@ -73,3 +73,14 @@ button:disabled,
 .scrollbar-none::-webkit-scrollbar {
   display: none;
 }
+
+/* When embedded in dashboard preview (?qrkprev56mv1024vl=1): hide scrollbar but keep scroll */
+html[data-preview-embed],
+body[data-preview-embed] {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+html[data-preview-embed]::-webkit-scrollbar,
+body[data-preview-embed]::-webkit-scrollbar {
+  display: none;
+}

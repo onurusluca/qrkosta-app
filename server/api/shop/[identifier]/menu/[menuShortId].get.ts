@@ -7,30 +7,18 @@ type MenuCategory = Database['public']['Tables']['menu_categories']['Row']
 type MenuItem = Database['public']['Tables']['menu_items']['Row']
 type MenuItemVariant = Database['public']['Tables']['menu_item_variants']['Row']
 
-/** 5-char alphanumeric = short_id (QR code); otherwise slug */
 function isShortId(identifier: string): boolean {
   return /^[A-Za-z0-9]{5}$/.test(identifier)
 }
 
-const VISIT_LOG_DELAY_MS = 2000
-
 export default defineEventHandler(async (event) => {
   const identifier = getRouterParam(event, 'identifier')
-  if (!identifier) {
+  const menuShortId = getRouterParam(event, 'menuShortId')
+  if (!identifier || !menuShortId) {
     throw createError({ statusCode: 404, statusMessage: 'Not found' })
   }
 
-  const query = getQuery(event)
-  const utm_source = typeof query.utm_source === 'string' ? query.utm_source : null
-  const visitor_id = typeof query.visitor_id === 'string' ? query.visitor_id : null
-
   const supabase = serverSupabaseServiceRole(event)
-
-  function scheduleVisit(row: { shop_id: string | null, table_id: null, path: 'shop', identifier: string, visit_type: string, utm_source: string | null, visitor_id: string | null }) {
-    setTimeout(() => {
-      (supabase as any).from('visits').insert(row).then(() => {}).catch(() => {})
-    }, VISIT_LOG_DELAY_MS)
-  }
 
   if (isShortId(identifier)) {
     const { data: shop, error } = await supabase
@@ -39,13 +27,8 @@ export default defineEventHandler(async (event) => {
       .eq('short_id', identifier.toUpperCase())
       .maybeSingle()
 
-    if (error) {
-      throw createError({ statusCode: 500, statusMessage: 'Failed to resolve shop' })
-    }
-    if (!shop) {
-      throw createError({ statusCode: 404, statusMessage: 'Shop not found' })
-    }
-    scheduleVisit({ shop_id: null, table_id: null, path: 'shop', identifier, visit_type: 'redirect', utm_source, visitor_id })
+    if (error) throw createError({ statusCode: 500, statusMessage: 'Failed to resolve shop' })
+    if (!shop) throw createError({ statusCode: 404, statusMessage: 'Shop not found' })
     return { slug: shop.slug }
   }
 
@@ -56,33 +39,19 @@ export default defineEventHandler(async (event) => {
     .eq('is_active', true)
     .maybeSingle()
 
-  if (shopError) {
-    throw createError({ statusCode: 500, statusMessage: 'Failed to load shop' })
-  }
-  if (!shop) {
-    throw createError({ statusCode: 404, statusMessage: 'Shop not found' })
-  }
+  if (shopError) throw createError({ statusCode: 500, statusMessage: 'Failed to load shop' })
+  if (!shop) throw createError({ statusCode: 404, statusMessage: 'Shop not found' })
 
-  const { data: menu } = await supabase
+  const { data: menu, error: menuError } = await supabase
     .from('menus')
     .select('*')
     .eq('shop_id', shop.id)
+    .eq('short_id', menuShortId)
     .eq('is_active', true)
-    .order('sort_order', { ascending: true, nullsFirst: false })
-    .limit(1)
     .maybeSingle()
 
-  if (!menu) {
-    const visit_type = utm_source === 'qr-code' ? 'qr' : 'direct'
-    scheduleVisit({ shop_id: shop.id, table_id: null, path: 'shop', identifier, visit_type, utm_source, visitor_id })
-    return {
-      shop: shop as Shop,
-      menu: null as Menu | null,
-      categories: [] as MenuCategory[],
-      items: [] as MenuItem[],
-      variants: [] as MenuItemVariant[]
-    }
-  }
+  if (menuError) throw createError({ statusCode: 500, statusMessage: 'Failed to load menu' })
+  if (!menu) throw createError({ statusCode: 404, statusMessage: 'Menu not found' })
 
   const { data: categories } = await supabase
     .from('menu_categories')
@@ -117,8 +86,6 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  const visit_type = utm_source === 'qr-code' ? 'qr' : 'direct'
-  scheduleVisit({ shop_id: shop.id, table_id: null, path: 'shop', identifier, visit_type, utm_source, visitor_id })
   return {
     shop: shop as Shop,
     menu: menu as Menu,

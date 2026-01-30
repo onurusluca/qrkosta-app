@@ -19,7 +19,7 @@ function onSelect(v: string | { value: string } | undefined) {
     :model-value="locale"
     :items="options"
     value-key="value"
-    size="sm"
+    size="md"
     variant="ghost"
     class="min-w-24"
     @update:model-value="onSelect"

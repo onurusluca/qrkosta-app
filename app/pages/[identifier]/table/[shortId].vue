@@ -192,7 +192,7 @@ useHead({
     </div>
 
     <template v-else-if="shop && table">
-      <header class="border-b border-neutral-200 bg-white px-4 py-6">
+      <header class="border-b border-neutral-200 bg-white px-4 py-4">
         <div class="flex justify-end gap-2 px-4 pb-2">
           <LanguageChanger />
           <CurrencyChanger />

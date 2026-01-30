@@ -8,6 +8,7 @@
     "bioWriteUs": "メールする",
     "bioContact": "お問い合わせ",
     "notFound": "お店が見つかりません。",
+    "previewWaiting": "プレビューを待っています…",
     "error": "エラーが発生しました。",
     "noMenu": "メニューはまだありません。",
     "map": "地図",
@@ -24,6 +25,9 @@
     "everyonesOrders": "全員の注文",
     "allMyOrders": "自分の注文一覧",
     "back": "戻る",
-    "noPastOrders": "過去の注文はありません"
+    "noPastOrders": "過去の注文はありません",
+    "seeAllMenus": "メニュー一覧",
+    "menusTitle": "メニュー",
+    "noMenus": "メニューはありません。"
   }
 }

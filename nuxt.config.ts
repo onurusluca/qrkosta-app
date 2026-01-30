@@ -14,12 +14,18 @@ export default defineNuxtConfig({
     public: {
       SUPABASE_URL: process.env.SUPABASE_URL,
       SUPABASE_KEY: process.env.SUPABASE_KEY,
-      BUNNY_CDN_URL: 'https://qrkosta.b-cdn.net'
+      BUNNY_CDN_URL: 'https://qrkosta.b-cdn.net',
+      /** Allowed origin for postMessage when ?qrkprev56mv1024vl=1 (dashboard embedding). */
+      PREVIEW_ORIGIN: process.env.PREVIEW_ORIGIN || 'http://localhost:4000'
     }
   },
 
   routeRules: {
     '/**': { ssr: true }
+  },
+
+  devServer: {
+    port: 4004
   },
 
   compatibilityDate: '2025-01-15',

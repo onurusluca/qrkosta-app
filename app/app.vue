@@ -1,4 +1,6 @@
 <script setup>
+const route = useRoute()
+
 useHead({
   meta: [
     { name: 'viewport', content: 'width=device-width, initial-scale=1' }
@@ -7,7 +9,11 @@ useHead({
     { rel: 'icon', href: '/favicon.ico', key: 'favicon' }
   ],
   htmlAttrs: {
-    lang: 'en'
+    lang: 'en',
+    'data-preview-embed': computed(() => (route.query.qrkprev56mv1024vl === '1' ? 'true' : undefined))
+  },
+  bodyAttrs: {
+    'data-preview-embed': computed(() => (route.query.qrkprev56mv1024vl === '1' ? 'true' : undefined))
   }
 })
 </script>

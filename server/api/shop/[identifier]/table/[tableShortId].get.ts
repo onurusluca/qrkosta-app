@@ -11,6 +11,8 @@ function isShortId(id: string) {
   return /^[A-Za-z0-9]{5}$/.test(id)
 }
 
+const VISIT_LOG_DELAY_MS = 2000
+
 export default defineEventHandler(async (event) => {
   const identifier = getRouterParam(event, 'identifier')
   const tableShortId = getRouterParam(event, 'tableShortId')
@@ -18,7 +20,17 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, statusMessage: 'Not found' })
   }
 
+  const query = getQuery(event)
+  const utm_source = typeof query.utm_source === 'string' ? query.utm_source : null
+  const visitor_id = typeof query.visitor_id === 'string' ? query.visitor_id : null
+
   const supabase = serverSupabaseServiceRole(event)
+
+  function scheduleVisit(row: { shop_id: string, table_id: string, path: 'table', identifier: string, visit_type: string, utm_source: string | null, visitor_id: string | null }) {
+    setTimeout(() => {
+      (supabase as any).from('visits').insert(row).then(() => {}).catch(() => {})
+    }, VISIT_LOG_DELAY_MS)
+  }
 
   let shop: Shop | null = null
   if (isShortId(identifier)) {
@@ -96,6 +108,9 @@ export default defineEventHandler(async (event) => {
       }
     }
   }
+
+  const visit_type = isShortId(identifier) ? 'redirect' : (utm_source === 'qr-code' ? 'qr' : 'direct')
+  scheduleVisit({ shop_id: shop.id, table_id: table.id, path: 'table', identifier, visit_type, utm_source, visitor_id })
 
   return {
     shop: shop as Shop,

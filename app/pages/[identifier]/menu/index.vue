@@ -9,6 +9,7 @@ type MenuItemVariant = Database['public']['Tables']['menu_item_variants']['Row']
 const route = useRoute()
 const { t, locale } = useI18n()
 const identifier = computed(() => route.params.identifier as string)
+const isPreview = computed(() => route.query.qrkprev56mv1024vl === '1')
 
 function isShortId(id: string) {
   return /^[A-Za-z0-9]{5}$/.test(id)
@@ -21,13 +22,14 @@ function localeText(val: import('~/types/database.types').Json | null | undefine
   return o[locale.value] ?? o.en ?? o.ja ?? Object.values(o)[0] ?? ''
 }
 
+type MenuPayload = { slug?: string, shop?: Shop | null, menu?: unknown, categories: MenuCategory[], items: MenuItem[], variants: MenuItemVariant[] }
 const { data: payload, error, pending } = await useAsyncData(
   `shop-menu-${identifier.value}`,
-  () => $fetch<{ slug?: string, shop?: Shop, menu?: unknown, categories: MenuCategory[], items: MenuItem[], variants: MenuItemVariant[] }>(`/api/shop/${identifier.value}`),
+  () => $fetch<MenuPayload>(`/api/shop/${identifier.value}`),
   { watch: [identifier], server: true }
 )
 
-const redirectToSlug = computed(() => payload.value && 'slug' in payload.value && payload.value.slug && !('shop' in payload.value && payload.value.shop))
+const redirectToSlug = computed(() => !isPreview.value && payload.value && 'slug' in payload.value && payload.value.slug && !('shop' in payload.value && payload.value.shop))
 if (redirectToSlug.value && payload.value && 'slug' in payload.value) {
   await navigateTo(`/${payload.value.slug}/menu?utm_source=qr-code`, { replace: true })
 }
@@ -37,10 +39,51 @@ watch(redirectToSlug, (v) => {
   }
 }, { immediate: true })
 
-const shop = computed(() => ('shop' in (payload.value || {}) ? payload.value?.shop : null) as Shop | null)
-const categories = computed(() => ((payload.value && 'categories' in payload.value ? payload.value.categories : []) || []) as MenuCategory[])
-const items = computed(() => ((payload.value && 'items' in payload.value ? payload.value.items : []) || []) as MenuItem[])
-const variants = computed(() => ((payload.value && 'variants' in payload.value ? payload.value.variants : []) || []) as MenuItemVariant[])
+const previewPayload = ref<{ shop: Shop | null, categories: MenuCategory[], items: MenuItem[], variants: MenuItemVariant[] } | null>(null)
+// @ts-expect-error useAsyncData + computed causes "excessively deep" type instantiation
+const shop = computed<Shop | null>(() => {
+  if (isPreview.value && previewPayload.value) return previewPayload.value.shop
+  const raw = payload.value
+  if (!raw || typeof raw !== 'object' || !('shop' in raw)) return null
+  const s = (raw as { shop: Shop | null | undefined }).shop
+  return s ?? null
+})
+const categories = computed<MenuCategory[]>(() => {
+  if (isPreview.value && previewPayload.value) return previewPayload.value.categories
+  const p = payload.value
+  return (p && 'categories' in p ? p.categories : []) || []
+})
+const items = computed<MenuItem[]>(() => {
+  if (isPreview.value && previewPayload.value) return previewPayload.value.items
+  const p = payload.value
+  return (p && 'items' in p ? p.items : []) || []
+})
+const variants = computed<MenuItemVariant[]>(() => {
+  if (isPreview.value && previewPayload.value) return previewPayload.value.variants
+  const p = payload.value
+  return (p && 'variants' in p ? p.variants : []) || []
+})
+
+onMounted(() => {
+  if (!isPreview.value) return
+  const allowedOrigin = (useRuntimeConfig().public as { PREVIEW_ORIGIN?: string }).PREVIEW_ORIGIN || ''
+  const handler = (event: MessageEvent) => {
+    if (allowedOrigin && event.origin !== allowedOrigin) return
+    if (event.data?.type === 'preview' && event.data?.payload) {
+      const p = event.data.payload as { shop?: Shop | null, categories?: MenuCategory[], items?: MenuItem[], variants?: MenuItemVariant[] }
+      previewPayload.value = {
+        shop: p.shop ?? null,
+        categories: Array.isArray(p.categories) ? p.categories : [],
+        items: Array.isArray(p.items) ? p.items : [],
+        variants: Array.isArray(p.variants) ? p.variants : []
+      }
+    }
+  }
+  window.addEventListener('message', handler)
+  onUnmounted(() => window.removeEventListener('message', handler))
+})
+
+const menusUrl = computed(() => `/${identifier.value}/menus`)
 
 useHead({
   title: () => (shop.value ? localeText(shop.value.name as import('~/types/database.types').Json) : t('shop.title'))
@@ -84,10 +127,22 @@ useHead({
       </div>
 
       <template v-else-if="shop">
-        <header class="border-b border-neutral-200 bg-white px-4 py-6">
-          <div class="flex justify-end gap-2 px-4 pb-2">
-            <LanguageChanger />
-            <CurrencyChanger />
+        <header class="border-b border-neutral-200 bg-white px-4 py-4">
+          <div class="flex flex-wrap items-center justify-between gap-2 px-4 pb-2">
+            <NuxtLink
+              :to="menusUrl"
+              class="inline-flex items-center gap-1 text-sm font-medium text-primary-600 hover:underline"
+            >
+              <UIcon
+                name="lucide:list"
+                class="size-4"
+              />
+              {{ t('shop.seeAllMenus') }}
+            </NuxtLink>
+            <div class="flex gap-2">
+              <LanguageChanger />
+              <CurrencyChanger />
+            </div>
           </div>
           <div class="flex flex-col items-center gap-4 text-center sm:flex-row sm:items-start sm:text-left">
             <div

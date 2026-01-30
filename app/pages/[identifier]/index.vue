@@ -28,6 +28,7 @@ interface BioButtonRow {
 const route = useRoute()
 const { t, locale } = useI18n()
 const identifier = computed(() => route.params.identifier as string)
+const isPreview = computed(() => route.query.qrkprev56mv1024vl === '1')
 
 function isShortId(id: string) {
   return /^[A-Za-z0-9]{5}$/.test(id)
@@ -40,13 +41,14 @@ function localeText(val: import('~/types/database.types').Json | null | undefine
   return o[locale.value] ?? o.en ?? o.ja ?? Object.values(o)[0] ?? ''
 }
 
+type ShopPayload = { slug?: string, shop?: Shop | null }
 const { data: payload, error, pending } = await useAsyncData(
   `shop-bio-${identifier.value}`,
-  () => $fetch<{ slug?: string, shop?: Shop }>(`/api/shop/${identifier.value}`),
+  (): Promise<ShopPayload> => $fetch<ShopPayload>(`/api/shop/${identifier.value}`),
   { watch: [identifier], server: true }
 )
 
-const redirectToSlug = computed(() => payload.value && 'slug' in payload.value && payload.value.slug && !('shop' in payload.value && payload.value.shop))
+const redirectToSlug = computed(() => !isPreview.value && payload.value && 'slug' in payload.value && payload.value.slug && !('shop' in payload.value && payload.value.shop))
 if (redirectToSlug.value && payload.value && 'slug' in payload.value) {
   await navigateTo(`/${payload.value.slug}?utm_source=qr-code`, { replace: true })
 }
@@ -56,7 +58,25 @@ watch(redirectToSlug, (v) => {
   }
 }, { immediate: true })
 
-const shop = computed(() => ('shop' in (payload.value || {}) ? payload.value?.shop : null) as Shop | null)
+const previewShop = ref<Shop | null>(null)
+const shop = computed<Shop | null>(() => {
+  if (isPreview.value && previewShop.value) return previewShop.value
+  const p = payload.value
+  return (p && 'shop' in p ? p.shop : null) ?? null
+})
+
+onMounted(() => {
+  if (!isPreview.value) return
+  const allowedOrigin = (useRuntimeConfig().public as { PREVIEW_ORIGIN?: string }).PREVIEW_ORIGIN || ''
+  const handler = (event: MessageEvent) => {
+    if (allowedOrigin && event.origin !== allowedOrigin) return
+    if (event.data?.type === 'preview' && event.data?.payload?.shop) {
+      previewShop.value = event.data.payload.shop as Shop
+    }
+  }
+  window.addEventListener('message', handler)
+  onUnmounted(() => window.removeEventListener('message', handler))
+})
 
 /** Japanese-style: 〒postal_code prefecture city town street building, or formatted fallback */
 function formatAddress(addr: import('~/types/database.types').Json | null | undefined): string {
@@ -80,7 +100,7 @@ const bioButtons = computed((): BioButtonRow[] => {
   if (!s) return []
   const base = `/${identifier.value}`
   const all: BioButtonRow[] = [
-    { labelKey: 'shop.bioMenu', url: `${base}/menu`, type: 'menu', icon: BIO_ICONS.menu! }
+    { labelKey: 'shop.bioMenu', url: `${base}/menus`, type: 'menu', icon: BIO_ICONS.menu! }
   ]
   // Booking not yet: if (s.website_url) all.push({ labelKey: 'shop.bioBook', url: s.website_url, type: 'book', icon: BIO_ICONS.book! })
   if (s.google_maps_url) all.push({ labelKey: 'shop.bioFindUs', url: s.google_maps_url, type: 'map', icon: BIO_ICONS.map! })

@@ -8,6 +8,7 @@
     "bioWriteUs": "Write us",
     "bioContact": "Talk to us",
     "notFound": "Shop not found.",
+    "previewWaiting": "Waiting for preview…",
     "error": "Something went wrong.",
     "noMenu": "No menu available yet.",
     "map": "Map",
@@ -24,6 +25,9 @@
     "everyonesOrders": "Everyone's orders",
     "allMyOrders": "All my orders",
     "back": "Back",
-    "noPastOrders": "No past orders"
+    "noPastOrders": "No past orders",
+    "seeAllMenus": "See all menus",
+    "menusTitle": "Our menus",
+    "noMenus": "No menus available."
   }
 }
