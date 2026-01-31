@@ -24,9 +24,13 @@ function localeText(val: import('~/types/database.types').Json | null | undefine
 
 type MenuPayload = { slug?: string, shop?: Shop | null, menu?: unknown, categories: MenuCategory[], items: MenuItem[], variants: MenuItemVariant[] }
 const { data: payload, error, pending } = await useAsyncData(
-  `shop-menu-${identifier.value}`,
-  () => $fetch<MenuPayload>(`/api/shop/${identifier.value}`),
-  { watch: [identifier], server: true }
+  `shop-menu-${identifier.value}-${String(route.query.menu_id)}`,
+  () => {
+    const menuId = route.query.menu_id
+    const q = typeof menuId === 'string' && menuId ? `?menu_id=${encodeURIComponent(menuId)}` : ''
+    return $fetch<MenuPayload>(`/api/shop/${identifier.value}${q}`)
+  },
+  { watch: [identifier, () => route.query.menu_id], server: true }
 )
 
 const redirectToSlug = computed(() => !isPreview.value && payload.value && 'slug' in payload.value && payload.value.slug && !('shop' in payload.value && payload.value.shop))

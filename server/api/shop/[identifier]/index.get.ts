@@ -23,6 +23,7 @@ export default defineEventHandler(async (event) => {
   const query = getQuery(event)
   const utm_source = typeof query.utm_source === 'string' ? query.utm_source : null
   const visitor_id = typeof query.visitor_id === 'string' ? query.visitor_id : null
+  const menuIdFromQuery = typeof query.menu_id === 'string' ? query.menu_id : null
 
   const supabase = serverSupabaseServiceRole(event)
 
@@ -63,14 +64,27 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, statusMessage: 'Shop not found' })
   }
 
-  const { data: menu } = await supabase
-    .from('menus')
-    .select('*')
-    .eq('shop_id', shop.id)
-    .eq('is_active', true)
-    .order('sort_order', { ascending: true, nullsFirst: false })
-    .limit(1)
-    .maybeSingle()
+  let menu: Menu | null = null
+  if (menuIdFromQuery) {
+    const { data: menuById } = await supabase
+      .from('menus')
+      .select('*')
+      .eq('id', menuIdFromQuery)
+      .eq('shop_id', shop.id)
+      .maybeSingle()
+    menu = menuById as Menu | null
+  }
+  if (!menu) {
+    const { data: firstMenu } = await supabase
+      .from('menus')
+      .select('*')
+      .eq('shop_id', shop.id)
+      .eq('is_active', true)
+      .order('sort_order', { ascending: true, nullsFirst: false })
+      .limit(1)
+      .maybeSingle()
+    menu = firstMenu as Menu | null
+  }
 
   if (!menu) {
     const visit_type = utm_source === 'qr-code' ? 'qr' : 'direct'
